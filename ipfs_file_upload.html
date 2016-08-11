@@ -1,0 +1,53 @@
+<html>
+
+<head>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <form id="data">
+        <input name="inputFile[]" type="file" />
+        <br />
+        <input type="submit" value="Submit">
+    </form>
+    <p id="filename"></p>
+    <p id="hash"></p>
+    <a id="ipfs_link" href="#" target="_blank"></a>
+    <p>
+        <u>Steps</u><br/>
+        1.Run the ipfs daemon<br/>
+        2.For ipfs to work from your browser, you need to enable <a href="https://en.wikipedia.org/wiki/Cross-origin_resource_sharing">CORS</a>
+        search for CORS in the <a href = "https://ipfs.io/docs/commands/">IPFS commands page</a>. Copy and run the command in your terminal
+    </p>
+
+
+    <script>
+        $(document).ready(function() {
+            $("form#data").submit(function(event) {
+                //disable the default form submission
+                event.preventDefault();
+                //grab all form data
+                var formData = new FormData($(this)[0]);
+                $.ajax({
+                    url: 'http://localhost:5001/api/v0/add',
+                    type: 'POST',
+                    data: formData,
+                    async: false,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function(result) {
+                        $("#filename").html(result.Name);
+                        $("#hash").html(result.Hash)
+                        $('#ipfs_link').attr('href','http://gateway.ipfs.io/ipfs/' + result.Hash);
+                        $('#ipfs_link').html('http://gateway.ipfs.io/ipfs/' + result.Hash);
+                    }
+                });
+
+                return false;
+            });
+        });
+    </script>
+</body>
+
+</html>
