@@ -1,0 +1,19 @@
+{
+  "name": "certificate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/subramanianv/CertificateVerification.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/subramanianv/CertificateVerification/issues"
+  },
+  "homepage": "https://github.com/subramanianv/CertificateVerification#readme"
+}
