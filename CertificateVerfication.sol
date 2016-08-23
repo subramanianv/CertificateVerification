@@ -9,6 +9,7 @@ contract certVeri {
     bool added;
     string ipfsHash;
     mapping(uint => uint) owners;
+    address issuer;
   }
 
     modifier onlyUniversity {
@@ -58,7 +59,7 @@ contract certVeri {
   function isCertificateValid(string ipfsHash, address owner) constant returns (bool) {
     if(certificates[ipfsHash].added == false) return false;
     Certificate cert = certificates[ipfsHash];
-    if(cert.owners[uint(owner)] == 2)
+    if(cert.owners[uint(owner)] == 2 && cert.owners[uint(cert.issuer)] == 2)
       return true;
      else{
        return false;
