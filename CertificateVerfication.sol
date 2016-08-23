@@ -48,6 +48,13 @@ contract certVeri {
     c.owners[uint(msg.sender)] = 2;
   }
 
+  function revoke(string ipfsHash) onlyUniversity {
+    if(certificates[ipfsHash].added == false) throw;
+    Certificate cert = certificates[ipfsHash];
+    if(cert.owners[uint(msg.sender)] != 2) throw;
+    cert.owners[uint(msg.sender)] = 1;
+  }
+
   function isCertificateValid(string ipfsHash, address owner) constant returns (bool) {
     if(certificates[ipfsHash].added == false) return false;
     Certificate cert = certificates[ipfsHash];
