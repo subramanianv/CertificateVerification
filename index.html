@@ -1,0 +1,55 @@
+<html>
+
+<head>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+    <script src="web3.min.js"></script>
+</head>
+
+<body>
+    <form id="data">
+        <input name="cert[]" type="file" />
+        <br />
+        <input type="submit" value="Submit">
+    </form>
+    <p id="filename"></p>
+    <p id="hash"></p>
+    <p id="signature"></p>
+    <a id="ipfs_link" href="#" target="_blank"></a>
+
+
+    <script>
+        $(document).ready(function() {
+            $("form#data").submit(function(event) {
+                //disable the default form submission
+                event.preventDefault();
+                //grab all form data
+                var formData = new FormData($(this)[0]);
+                $.ajax({
+                    url: 'http://localhost:5001/api/v0/add',
+                    type: 'POST',
+                    data: formData,
+                    async: false,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function(result) {
+                        $("#filename").html(result.Name);
+                        $("#hash").html(result.Hash)
+                        $('#ipfs_link').attr('href','http://gateway.ipfs.io/ipfs/' + result.Hash);
+                        $('#ipfs_link').html('http://gateway.ipfs.io/ipfs/' + result.Hash);
+                        sign(web3.eth.accounts[0], web3.sha3(result.Hash), function(e, m) {
+                          console.log(e, m);
+                          $('#signature').html(m);
+                        });
+
+                    }
+                });
+
+                return false;
+            });
+        });
+    </script>
+    <script src="certificateContract.js"></script>
+</body>
+
+</html>
