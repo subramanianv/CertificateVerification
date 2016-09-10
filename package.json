@@ -4,7 +4,7 @@
   "description": "There are 3 main entities",
   "main": "certificateContract.js",
   "scripts": {
-    "build" : "webpack ./entry.js bundle.js",
+    "build" : "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
