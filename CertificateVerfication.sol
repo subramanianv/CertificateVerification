@@ -12,10 +12,10 @@ contract CertificateVerification {
     address issuer;
   }
 
-    modifier onlyUniversity {
-        if (universities[uint(msg.sender)].verified == true)
-            _
-    }
+  modifier onlyUniversity {
+      if (universities[uint(msg.sender)].verified == true)
+          _
+  }
 
 
   mapping (uint => University) universities;
