@@ -1,4 +1,4 @@
-contract certVeri {
+contract CertificateVerification {
   struct University {
     bool added;
     string name;
@@ -7,7 +7,7 @@ contract certVeri {
 
   struct Certificate {
     bool added;
-    string ipfsHash;
+    bytes ipfsHash;
     mapping(uint => uint) owners;
     address issuer;
   }
@@ -19,7 +19,7 @@ contract certVeri {
 
 
   mapping (uint => University) universities;
-  mapping (string => Certificate) certificates;
+  mapping (bytes => Certificate) certificates;
 
   function addUniversity (string _name) {
     if(universities[uint(msg.sender)].added) {
@@ -33,36 +33,38 @@ contract certVeri {
     }
   }
 
-  function addCertificate (string ipfsHash, address assignee) onlyUniversity {
+  function addCertificate (bytes ipfsHash, address assignee) onlyUniversity {
     if(certificates[ipfsHash].added == true) return;
     Certificate cert = certificates[ipfsHash];
     cert.ipfsHash = ipfsHash;
     cert.owners[uint(msg.sender)] = 2;
     cert.owners[uint(assignee)] = 1;
+    cert.issuer = msg.sender;
+    cert.added = true;
     certificates[ipfsHash] = cert;
   }
 
-  function addConfirmation(string ipfsHash) {
+  function getUniversity(address univ) public constant returns (string) {
+      return universities[uint(univ)].name;
+  }
+
+  function addConfirmation(bytes ipfsHash) {
     if(certificates[ipfsHash].added == false) return;
     Certificate c = certificates[ipfsHash];
     if(c.owners[uint(msg.sender)] == 0) return;
     c.owners[uint(msg.sender)] = 2;
   }
 
-  function revoke(string ipfsHash) onlyUniversity {
+  function revoke(bytes ipfsHash) onlyUniversity {
     if(certificates[ipfsHash].added == false) throw;
     Certificate cert = certificates[ipfsHash];
     if(cert.owners[uint(msg.sender)] != 2) throw;
     cert.owners[uint(msg.sender)] = 1;
   }
 
-  function isCertificateValid(string ipfsHash, address owner) constant returns (bool) {
+  function isCertificateValid(bytes ipfsHash, address assignee) public constant returns (bool) {
     if(certificates[ipfsHash].added == false) return false;
     Certificate cert = certificates[ipfsHash];
-    if(cert.owners[uint(owner)] == 2 && cert.owners[uint(cert.issuer)] == 2)
-      return true;
-     else{
-       return false;
-     }
+    return (cert.owners[uint(assignee)] == 2 && cert.owners[uint(cert.issuer)] == 2);
   }
 }
