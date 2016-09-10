@@ -1,0 +1,23 @@
+{
+  "name": "certificateverification",
+  "version": "1.0.0",
+  "description": "There are 3 main entities",
+  "main": "certificateContract.js",
+  "scripts": {
+    "build" : "webpack ./entry.js bundle.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/subramanianv/CertificateVerification.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/subramanianv/CertificateVerification/issues"
+  },
+  "homepage": "https://github.com/subramanianv/CertificateVerification#readme",
+  "devDependencies": {
+    "webpack": "^1.13.2"
+  }
+}
