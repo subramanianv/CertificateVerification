@@ -4,7 +4,8 @@
   "description": "There are 3 main entities",
   "main": "certificateContract.js",
   "scripts": {
-    "build" : "webpack",
+    "build": "browserify src/app.js -o dist/app.bundle.js",
+    "start": "watchify src/app.js -o dist/app.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,6 +19,11 @@
   },
   "homepage": "https://github.com/subramanianv/CertificateVerification#readme",
   "devDependencies": {
-    "webpack": "^1.13.2"
+    "browserify": "^13.1.0",
+    "watchify": "^3.7.0"
+  },
+  "dependencies": {
+    "jquery": "^3.1.0",
+    "web3": "^0.17.0-alpha"
   }
 }
