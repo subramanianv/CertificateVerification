@@ -16,5 +16,5 @@ var setupWeb3Provider = function() {
 // export web3 instance and setup
 module.exports = {
   web3: web3,
-  setupWeb3Provider: setupWeb3Provider,
+  setupWeb3Provider: setupWeb3Provider
 };

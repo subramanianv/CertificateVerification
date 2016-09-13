@@ -9,9 +9,14 @@ contract CertificateVerification {
     bool added;
     bytes ipfsHash;
     mapping(uint => uint) owners;
+    Signature signature;
     address issuer;
   }
-
+  struct Signature {
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+  }
   modifier onlyUniversity {
       if (universities[uint(msg.sender)].verified == true)
           _
@@ -33,7 +38,7 @@ contract CertificateVerification {
     }
   }
 
-  function addCertificate (bytes ipfsHash, address assignee) onlyUniversity {
+  function addCertificate (bytes ipfsHash, address assignee, bytes32 r, bytes32 s, uint8 v) onlyUniversity {
     if(certificates[ipfsHash].added == true) return;
     Certificate cert = certificates[ipfsHash];
     cert.ipfsHash = ipfsHash;
@@ -41,6 +46,7 @@ contract CertificateVerification {
     cert.owners[uint(assignee)] = 1;
     cert.issuer = msg.sender;
     cert.added = true;
+    cert.signature = Signature({r : r, s : s, v : v});
     certificates[ipfsHash] = cert;
   }
 
@@ -62,9 +68,18 @@ contract CertificateVerification {
     cert.owners[uint(msg.sender)] = 1;
   }
 
+  function verifySignature(bytes ipfsHash, address issuer, Signature signature) internal returns (bool) {
+    bytes32 h = sha3(ipfsHash);
+    return ecrecover(h, signature.v, signature.r,signature.s) == issuer;
+  }
+
   function isCertificateValid(bytes ipfsHash, address assignee) public constant returns (bool) {
     if(certificates[ipfsHash].added == false) return false;
     Certificate cert = certificates[ipfsHash];
-    return (cert.owners[uint(assignee)] == 2 && cert.owners[uint(cert.issuer)] == 2);
+    return (
+      cert.owners[uint(assignee)] == 2 &&
+      cert.owners[uint(cert.issuer)] == 2 &&
+      verifySignature(ipfsHash,cert.issuer, cert.signature)
+    );
   }
 }
