@@ -58,7 +58,7 @@ contract CertificateVerification {
 
   }
   function getCount() public constant returns (uint) {
-      return _certCount;
+    return _certCount;
   }
 
   function addConfirmation(bytes ipfsHash) {
