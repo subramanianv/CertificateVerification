@@ -1,13 +1,72 @@
+var Tx = require('ethereumjs-tx');
 var lightwallet = require('eth-lightwallet');
-var keystore = lightwallet.keystore;
+var Web3 = require('web3');
+var web3 = new Web3();
+var EthQuery = require('eth-query');
+
+
+var HookedWeb3Provider = require("hooked-web3-provider");
+var utils = require('ethereumjs-util');
+
+
+var TEST_NET = 'https://morden.infura.io/';
 var password = 'mypass';
 var seed = 'ecology face asset comic nephew tragic wisdom clump tray whip affair mobile';
+var salt = 'swag';
+var keyStore = lightwallet.keystore;
 
-keystore.deriveKeyFromPassword(password, function(err, pwDerivedKey) {
-  var ks = new keystore(seed, pwDerivedKey);
-  ks.generateNewAddress(pwDerivedKey);
-  var address = ks.getAddresses()[0];
-  var privateKey = ks.exportPrivateKey(address, pwDerivedKey);
-  var signature = lightwallet.signing.signMsg(ks, pwDerivedKey, "subbu", address);
-  console.log(signature, address, privateKey);
-});
+
+
+
+
+keyStore.createVault({
+    password: password,
+    seedPhrase: seed, // Optionally provide a 12-word seed phrase
+    salt: salt
+}, function(err, ks) {
+    ks.keyFromPassword(password, function(err, pwDerivedKey) {
+        if (err) throw err;
+        ks.generateNewAddress(pwDerivedKey, 1);
+        var addr = ks.getAddresses();
+        addr[0] = '0x' + addr[0];
+        console.log(addr[0]);
+        var provider = new HookedWeb3Provider({
+            host: TEST_NET,
+            transaction_signer: ks
+        });
+        // web3.setProvider(window.web3.currentProvider);
+        // addr[0] = web3.eth.accounts[0];
+        var query = new EthQuery(provider);
+        web3.setProvider(provider);
+
+        var simplestorageContract = web3.eth.contract([{
+            "constant": false,
+            "inputs": [{
+                "name": "x",
+                "type": "uint256"
+            }],
+            "name": "set",
+            "outputs": [],
+            "payable": false,
+            "type": "function"
+        }, {
+            "constant": true,
+            "inputs": [],
+            "name": "get",
+            "outputs": [{
+                "name": "retVal",
+                "type": "uint256"
+            }],
+            "payable": false,
+            "type": "function"
+        }]);
+        var simplestorage = simplestorageContract.at("0x4500ff0fcab6949466bb9c0779a7fb2c8c320705");
+        var tx = {
+          from : addr[0],
+          gas : 300000
+        }
+        //query.estimateGas(tx, console.log)
+        // debugger;
+        simplestorage.set(20, tx, console.log);
+    });
+})
