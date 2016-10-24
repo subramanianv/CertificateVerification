@@ -3,6 +3,8 @@ var lightwallet = require('eth-lightwallet');
 var Web3 = require('web3');
 var web3 = new Web3();
 var EthQuery = require('eth-query');
+var async = require('async');
+var _ = require('underscore');
 
 
 var HookedWeb3Provider = require("hooked-web3-provider");
@@ -24,6 +26,11 @@ keyStore.createVault({
     seedPhrase: seed, // Optionally provide a 12-word seed phrase
     salt: salt
 }, function(err, ks) {
+
+    ks.passwordProvider = function(callback) {
+        callback(null, "mypass");
+    };
+
     ks.keyFromPassword(password, function(err, pwDerivedKey) {
         if (err) throw err;
         ks.generateNewAddress(pwDerivedKey, 1);
@@ -34,10 +41,9 @@ keyStore.createVault({
             host: TEST_NET,
             transaction_signer: ks
         });
-        // web3.setProvider(window.web3.currentProvider);
-        // addr[0] = web3.eth.accounts[0];
         var query = new EthQuery(provider);
         web3.setProvider(provider);
+        //query.gasPrice(console.log);
 
         var simplestorageContract = web3.eth.contract([{
             "constant": false,
@@ -62,11 +68,42 @@ keyStore.createVault({
         }]);
         var simplestorage = simplestorageContract.at("0x4500ff0fcab6949466bb9c0779a7fb2c8c320705");
         var tx = {
-          from : addr[0],
-          gas : 300000
+            from: addr[0],
+            gas: 300000
         }
-        //query.estimateGas(tx, console.log)
-        // debugger;
-        simplestorage.set(20, tx, console.log);
+        var gasPrice = 50000000000
+        var gas = 3141592
+        var tx = {
+            from: addr[0]
+        }
+        var args = [20, tx];
+        async.waterfall([
+            function(callback) {
+                query.gasPrice(callback)
+            },
+
+            function estimateGas(gasPrice, callback) {
+                simplestorage.set.estimateGas(20, tx, function(err, gas) {
+                    callback(null, {
+                        gasPrice: gasPrice,
+                        gas
+                    })
+                })
+            },
+            function(args, callback) {
+                var tx = {
+                    from: addr[0]
+                }
+                tx = _.extendOwn(tx, args)
+                callback(null, tx);
+            }
+        ], function(err, tx) {
+            simplestorage.set(50, tx, console.log);
+        });
+        // simplestorage['set'].apply(this, args);
+        // async.waterfall([
+        //   query.gasPrice
+        // ], console.log)
+        //  simplestorage.set.estimateGas(20, tx, console.log);
     });
 })

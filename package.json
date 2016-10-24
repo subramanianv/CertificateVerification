@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "eth-query": "git://github.com/ethereumjs/eth-query.git",
+    "uport-persona" : "git+https://github.com/ConsenSys/uport-persona.git",
     "ethereumjs-tx": "^1.1.2",
     "ethereumjs-util": "^4.5.0",
     "hooked-web3-provider": "^1.0.0",
