@@ -22,13 +22,6 @@ var ipfsOptions = {
 }
 var keyStore = lightwallet.keystore;
 
-
-
-
-
-
-
-
 keyStore.createVault({
     password: password,
     seedPhrase: seed, // Optionally provide a 12-word seed phrase
@@ -70,14 +63,23 @@ keyStore.createVault({
         web3.setProvider(provider);
         debugger;
         console.log(ks.exportPrivateKey(addr[0], pwDerivedKey));
-        //var persona = new uport.MutablePersona(myAddress, ipfsOptions, web3.currentProvider);
-        //persona.setPublicSigningKey(ks.exportPrivateKey(addr[0], pwDerivedKey));
-        // debugger;
-        //persona.writeToRegistry().then(console.log, console.log);
-        console.log(myAddress);
-        var persona = new uport.Persona(myAddress, ipfsOptions, web3.currentProvider);
+        var persona = new uport.MutablePersona(utils.bufferToInt(utils.toBuffer(myAddress)), ipfsOptions, web3.currentProvider);
+        persona.setPublicSigningKey(ks.exportPrivateKey(addr[0], pwDerivedKey));
         debugger;
-        persona.load().then(console.log, console.log);
+        persona.writeToRegistry().then(console.log, console.log);
+        // console.log(myAddress);
+
+        // //utils.bufferToInt(utils.toBuffer(myAddress))
+
+        // var persona = new uport.Persona(utils.bufferToInt(utils.toBuffer(myAddress)), ipfsOptions, web3.currentProvider);
+        // debugger;
+        // function success (e) {
+        //   console.log("success ", e);
+        // }
+        // function failure (e) {
+        //   console.log("failure ", e);
+        // }
+        // persona.load().then(success, failure);
 
     });
 })
