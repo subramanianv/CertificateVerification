@@ -23,8 +23,17 @@
     "watchify": "^3.7.0"
   },
   "dependencies": {
+    "async": "^2.1.2",
+    "bs58": "^3.0.0",
+    "eth-lightwallet": "^2.5.2",
+    "eth-query": "git://github.com/ethereumjs/eth-query.git",
+    "ethereumjs-tx": "^1.1.2",
     "ethereumjs-util": "^4.5.0",
+    "hooked-web3-provider": "^1.0.0",
+    "ipfs-api": "^9.0.0",
     "jquery": "^3.1.0",
-    "web3": "^0.17.0-alpha"
+    "underscore": "^1.8.3",
+    "web3": "^0.17.0-alpha",
+    "uport-persona" : "git://github.com/subramanianv/uport-persona.git"
   }
 }
