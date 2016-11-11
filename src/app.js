@@ -12,7 +12,8 @@ var rpcURL = 'https://morden.infura.io/';
 var password = 'mypass';
 var keyStore = lightwallet.keystore;
 var registryAddress = '0x7356B947b626F48647E648D490C3a4FDe2d11e50';
-var seed = 'toe scene suffer upon lottery parent hard glue make profit survey april';
+var seed = 'nuclear oxygen lesson hint high tool benefit wait sport powder canyon tribe'; //keyStore.generateRandomSeed();
+console.log(seed);
 var ipfsOptions = {
     host: 'localhost',
     port: 5001,
@@ -28,6 +29,7 @@ function createWeb3Provider(rpcURL, keyStoreInstance) {
         transaction_signer: {
             hasAddress: keyStoreInstance.hasAddress.bind(keyStoreInstance),
             signTransaction: function(txParams, callback) {
+                debugger;
                 async.parallel({
                     gas: function(callback) {
                         query.estimateGas(txParams, callback);
@@ -36,6 +38,7 @@ function createWeb3Provider(rpcURL, keyStoreInstance) {
                         query.gasPrice(callback);
                     }
                 }, function(err, result) {
+                    debugger;
                     txParams.gas = result.gas;
                     txParams.gasPrice = result.gasPrice;
                     keyStoreInstance.signTransaction(txParams, callback);
@@ -81,9 +84,16 @@ appInit({
 
 function onReady(address, pwDerivedKey, keyStoreInstance, web3Provider) {
     web3.setProvider(web3Provider);
-    var persona = new uport.Persona(address, ipfsOptions, web3.currentProvider, registryAddress);
-    persona.load().then(function(tokens) {
-        var publicKey = persona.getPublicSigningKey();
+    debugger;
 
-    }, errorlog);
+    var persona = new uport.MutablePersona(address, ipfsOptions, web3.currentProvider, registryAddress);
+    // persona.load().then(function(tokens) {
+    //     var publicKey = persona.getPublicSigningKey();
+    //     console.log(publicKey);
+    // }, errorlog);
+    var privKey = keyStoreInstance.exportPrivateKey(address, pwDerivedKey);
+    persona.setPublicSigningKey(privKey);
+    persona.writeToRegistry().then(function(txHash) {
+
+    })
 }
