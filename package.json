@@ -6,6 +6,7 @@
   "scripts": {
     "build": "browserify src/app.js -o dist/app.bundle.js",
     "start": "watchify src/app.js -o dist/app.bundle.js",
+    "upload": "watchify src/upload.js -o dist/upload.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,16 +25,20 @@
   },
   "dependencies": {
     "async": "^2.1.2",
+    "bluebird": "3.4.6",
+    "body-parser": "1.15.2",
     "bs58": "^3.0.0",
     "eth-lightwallet": "^2.5.2",
     "eth-query": "git://github.com/ethereumjs/eth-query.git",
     "ethereumjs-tx": "^1.1.2",
     "ethereumjs-util": "^4.5.0",
+    "express": "4.14.0",
     "hooked-web3-provider": "^1.0.0",
+    "ipfs": "0.17.0",
     "ipfs-api": "^9.0.0",
     "jquery": "^3.1.0",
     "underscore": "^1.8.3",
-    "web3": "^0.17.0-alpha",
-    "uport-persona" : "git://github.com/subramanianv/uport-persona.git"
+    "uport-persona": "git://github.com/subramanianv/uport-persona.git",
+    "web3": "^0.17.0-alpha"
   }
 }

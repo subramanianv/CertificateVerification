@@ -1,3 +1,4 @@
+pragma solidity ^0.4.4;
 contract Documents {
 
   struct Document {
@@ -5,29 +6,46 @@ contract Documents {
     bytes ipfsHash;
     address assignee;
     address issuer;
+    uint id;
   }
 
-  uint docID = 1;
+  uint public docID = 1;
   event DocumentAdded(address indexed issuer, bytes ipfsHash, address assignee);
   event DocumentConfirmed(address confirmer, bytes ipfsHash);
-  mapping (ipfsHash => Document) documents;
+  mapping (bytes => Document) documents;
   mapping (address => uint[]) documentsIssuedTo;
+  mapping (uint => bytes) docIdHash;
+
 
   function addDocument (bytes ipfsHash, address assignee) {
-    if(Documents[ipfsHash].added == true) return;
-    Document doc = Documents[ipfsHash];
+    if(documents[ipfsHash].added == true) return;
+    Document doc = documents[ipfsHash];
     doc.ipfsHash = ipfsHash;
     doc.assignee = assignee;
     doc.issuer = msg.sender;
     doc.added = true;
-    docID = docID + 1;
-    documents[docID] = doc;
+    doc.id = docID;
+    documents[ipfsHash] = doc;
+    docIdHash[docID] = ipfsHash;
     documentsIssuedTo[assignee].push(docID);
-    DocumentAdded(msg.sender, ipfsHash, assignee);
+    docID = docID + 1;
   }
 
   function getDocumentsIssuedTo(address assignee) constant returns(uint[]) {
       return documentsIssuedTo[assignee];
+  }
+
+  function getDocumentByHash(bytes ipfsHash) constant returns(address issuer, address assignee, bytes _ipfsHash, uint _id) {
+      Document doc = documents[ipfsHash];
+      issuer  = doc.issuer;
+      assignee = doc.assignee;
+      _ipfsHash = ipfsHash;
+      _id = doc.id;
+  }
+
+  function getDocumentById(uint docID) constant constant returns(address issuer, address assignee, bytes _ipfsHash, uint _id) {
+      bytes ipfsHash = docIdHash[docID];
+      return getDocumentByHash(ipfsHash);
   }
 
 }

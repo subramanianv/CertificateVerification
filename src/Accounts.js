@@ -16,6 +16,9 @@ function createNewAccount(args, callback) {
         if (err) {
             return callback(err);
         }
+        ks.passwordProvider = function(callback) {
+            callback(null, password);
+        }
         ks.keyFromPassword(password, function(err, pwDerivedKey) {
             var firstAddress = getAddress(ks, pwDerivedKey)
             var pubKey = getEncryptionKey(ks, pwDerivedKey);
