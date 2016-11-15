@@ -23,23 +23,29 @@ var encryptionHDPath = "m/0'/0'/2'";
 var DocumentRegistry = require('./../build/contracts/Documents.sol');
 var documentRegistry = DocumentRegistry.deployed();
 
+
 var seed = 'nuclear oxygen lesson hint high tool benefit wait sport powder canyon tribe'; //keyStore.generateRandomSeed();
 console.log(seed);
 
 function base58ToHex(b58) {
-  var hexBuf = new Buffer(bs58.decode(b58));
-  return hexBuf.toString('hex');
+    var hexBuf = new Buffer(bs58.decode(b58));
+    return hexBuf.toString('hex');
 };
 
 function hexToBase58(hexStr) {
-  var buf = new Buffer(hexStr, 'hex');
-  return bs58.encode(buf);
+    var buf = new Buffer(hexStr, 'hex');
+    return bs58.encode(buf);
 };
 
-function hexToBase58(hexStr) {
-  var buf = new Buffer(hexStr, 'hex');
-  return bs58.encode(buf);
-};
+function decryptImage(obj, callback) {
+  var userPublicKey_ = ethUtils.stripHexPrefix(userPublicKey);
+  var cleartext = encryption.asymDecryptString(userKeystore, userPWDerivedKey, obj, userPublicKey_, userPublicKey_, encryptionHDPath);
+  var ci = document.getElementById('cimg');
+  var _base = 'data:image/png;base64,' + cleartext;
+  ci.setAttribute('src', _base);
+  //var arrayBuf = new Buffer(cleartext, 'base64');
+  callback(null, cleartext);
+}
 
 function createWeb3Provider(rpcURL, keyStoreInstance) {
     var query;
@@ -104,6 +110,16 @@ function onReady(address, encryption_key, pwDerivedKey, keyStoreInstance) {
     web3.setProvider(provider);
     EmailRegistry.setProvider(provider);
     DocumentRegistry.setProvider(provider);
+    var DocumentAdded = documentRegistry.DocumentAdded({}, {
+        fromBlock: "latest"
+    });
+
+    DocumentAdded.watch(function(error, result) {
+        console.log('Logged');
+        if (error == null) {
+            console.log(result.args);
+        }
+    });
     console.log('App ready');
 }
 
@@ -135,44 +151,50 @@ function handleUpload(email, uploadFile) {
     var theirPubKey;
     var userAddress;
     emailRegistry.getAddress(emailHash, {
+        from: "0x040fe96c87343a6a426a9342771b306239614b44"
+    }).then(function(address) {
+        userAddress = address;
+        console.log(userAddress);
+        persona = new uport.Persona(address, ipfs, web3.currentProvider, registryAddress);
+        return persona.load();
+    }).then(function(_persona) {
+        return persona.getClaims('encryption_key')[0].decodedToken.payload.claim.encryption_key;
+    }).then(function(encryption_key) {
+        theirPubKey = encryption_key;
+        return readFilePromise(uploadFile);
+    }).then(function(data) {
+        var keystore = userDetails.keyStoreInstance;
+        return encryptImagePromise(keystore, userDetails.pwDerivedKey, theirPubKey, encryptionHDPath, data);
+    }).then(function(encryptedObject) {
+        encryptedObject = JSON.stringify(encryptedObject);
+        var encryptedBuffer = utils.toBuffer(encryptedObject);
+        return ipfs.add(encryptedBuffer)
+    }).then(function(ipfsResult) {
+        console.log(ipfsResult);
+        var ipfsHex = '0x' + base58ToHex(ipfsResult[0].hash);
+        console.log(ipfsHex);
+        return documentRegistry.addDocument(ipfsHex, userAddress, {
+            from: "0x040fe96c87343a6a426a9342771b306239614b44"
+        });
+    }).then(function(docs) {
+        console.log(docs);
+        debugger;
+        return documentRegistry.getDocumentsIssuedTo(userAddress, {
             from: "0x040fe96c87343a6a426a9342771b306239614b44"
         })
-        .then(function(address) {
-            userAddress = address;
-            persona = new uport.Persona(address, ipfs, web3.currentProvider, registryAddress);
-            return persona.load();
-        }).then(function(_persona) {
-            return persona.getClaims('encryption_key')[0].decodedToken.payload.claim.encryption_key;
-        }).then(function(encryption_key) {
-            theirPubKey = encryption_key;
-            return readFilePromise(uploadFile);
-        }).then(function(data) {
-            var keystore = userDetails.keyStoreInstance;
-            return encryptImagePromise(keystore, userDetails.pwDerivedKey, theirPubKey, encryptionHDPath, data);
-        }).then(function(encryptedObject) {
-            encryptedObject = JSON.stringify(encryptedObject);
-            var encryptedBuffer = utils.toBuffer(encryptedObject);
-            return ipfs.add(encryptedBuffer)
-        }).then(function(ipfsResult) {
-            console.log(ipfsResult);
-            var ipfsHex  = '0x' + base58ToHex(ipfsResult[0].hash);
-            console.log(ipfsHex);
-            return documentRegistry.getDocumentByHash(ipfsHex, {from : "0x040fe96c87343a6a426a9342771b306239614b44"});
-        }).then(function(docs) {
-            console.log(docs);
-            debugger;
-            return documentRegistry.getDocumentsIssuedTo(userAddress, { from : "0x040fe96c87343a6a426a9342771b306239614b44"})
-        }).then(function(docs) {
-            for (var i = 0; i < docs.length; i++) {
-                console.log(docs[i].toString());
-            }
-            return  "";
-        }).then(function() {
-            return documentRegistry.getDocumentById(1, { from : "0x040fe96c87343a6a426a9342771b306239614b44"});
-        }).then(function(_doc) {
-            var hashHex = _doc[2].slice(2);
-            console.log(hexToBase58(hashHex));
+    }).then(function(docs) {
+        for (var i = 0; i < docs.length; i++) {
+            console.log(docs[i].toString());
+        }
+        return "";
+    }).then(function() {
+        return documentRegistry.getDocumentById(1, {
+            from: "0x040fe96c87343a6a426a9342771b306239614b44"
         });
+    }).then(function(_doc) {
+        var hashHex = _doc[2].slice(2);
+        console.log(hexToBase58(hashHex));
+    });
 }
 
 document.addEventListener("DOMContentLoaded", function() {

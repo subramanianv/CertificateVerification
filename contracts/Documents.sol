@@ -10,12 +10,11 @@ contract Documents {
   }
 
   uint public docID = 1;
-  event DocumentAdded(address indexed issuer, bytes ipfsHash, address assignee);
-  event DocumentConfirmed(address confirmer, bytes ipfsHash);
   mapping (bytes => Document) documents;
   mapping (address => uint[]) documentsIssuedTo;
   mapping (uint => bytes) docIdHash;
 
+  event DocumentAdded(address indexed assignee, bytes ipfsHash, uint docID);
 
   function addDocument (bytes ipfsHash, address assignee) {
     if(documents[ipfsHash].added == true) return;
@@ -29,6 +28,7 @@ contract Documents {
     docIdHash[docID] = ipfsHash;
     documentsIssuedTo[assignee].push(docID);
     docID = docID + 1;
+    DocumentAdded(assignee, ipfsHash, doc.id);
   }
 
   function getDocumentsIssuedTo(address assignee) constant returns(uint[]) {
