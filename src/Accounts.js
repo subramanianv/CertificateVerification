@@ -3,7 +3,9 @@ var async = require('async');
 var encryptionHDPath = "m/0'/0'/2'";
 var lightwallet = require('eth-lightwallet');
 var keyStore = lightwallet.keystore;
+
 console.log(keyStore.generateRandomSeed());
+
 function createNewAccount(args, callback) {
     var password = args.password;
     var seed = args.seed;

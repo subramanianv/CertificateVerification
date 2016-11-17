@@ -150,6 +150,7 @@ function handleUpload(email, uploadFile) {
     var emailHash = utils.bufferToHex(utils.sha3(email));
     var theirPubKey;
     var userAddress;
+    var docHash;
     emailRegistry.getAddress(emailHash, {
         from: "0x040fe96c87343a6a426a9342771b306239614b44"
     }).then(function(address) {
@@ -163,6 +164,7 @@ function handleUpload(email, uploadFile) {
         theirPubKey = encryption_key;
         return readFilePromise(uploadFile);
     }).then(function(data) {
+        docHash = utils.bufferToHex(utils.sha3(data));
         var keystore = userDetails.keyStoreInstance;
         return encryptImagePromise(keystore, userDetails.pwDerivedKey, theirPubKey, encryptionHDPath, data);
     }).then(function(encryptedObject) {
@@ -170,15 +172,14 @@ function handleUpload(email, uploadFile) {
         var encryptedBuffer = utils.toBuffer(encryptedObject);
         return ipfs.add(encryptedBuffer)
     }).then(function(ipfsResult) {
-        console.log(ipfsResult);
+
         var ipfsHex = '0x' + base58ToHex(ipfsResult[0].hash);
-        console.log(ipfsHex);
-        return documentRegistry.addDocument(ipfsHex, userAddress, {
+        console.log(ipfsResult[0].hash, ipfsHex, docHash);
+        return documentRegistry.addDocument(docHash, ipfsHex, userAddress, {
             from: "0x040fe96c87343a6a426a9342771b306239614b44"
         });
     }).then(function(docs) {
         console.log(docs);
-        debugger;
         return documentRegistry.getDocumentsIssuedTo(userAddress, {
             from: "0x040fe96c87343a6a426a9342771b306239614b44"
         })
@@ -192,8 +193,20 @@ function handleUpload(email, uploadFile) {
             from: "0x040fe96c87343a6a426a9342771b306239614b44"
         });
     }).then(function(_doc) {
-        var hashHex = _doc[2].slice(2);
-        console.log(hexToBase58(hashHex));
+        var hashHex = hexToBase58(_doc[2].slice(2));
+        return ipfs.cat(hashHex, {buffer : true});
+    }).then(function(body) {
+        debugger;
+        var encryptedObject = body.toString();
+        var pubKey = userDetails.keyStoreInstance.getPubKeys(encryptionHDPath)[0];
+        var userPublicKey_ = utils.stripHexPrefix(pubKey);
+        //encryptionKey = utils.stripHexPrefix(encryptionKey);
+        //var cleartext = encryption.asymDecryptString(userKeystore, userPWDerivedKey, obj, userPublicKey_, userPublicKey_, encryptionHDPath);
+        encryptedObject = JSON.parse(encryptedObject);
+        var cleartext = encryption.asymDecryptString(userDetails.keyStoreInstance, userDetails.pwDerivedKey, encryptedObject, userPublicKey_, userPublicKey_, encryptionHDPath);
+        var ci = document.getElementById('cimg');
+        var _base = 'data:image/png;base64,' + cleartext;
+        ci.setAttribute('src', _base);
     });
 }
 
