@@ -11,20 +11,26 @@ var _ = require('underscore');
 var HookedWeb3Provider = require("hooked-web3-provider");
 var uport = require('uport-persona');
 var ipfs = window.IpfsApi('localhost', '5001')
-var rpcURL = 'https://morden.infura.io/';
-var password = 'mypass';
+var rpcURL = '127.0.0.1';
 var keyStore = lightwallet.keystore;
 var encryption = lightwallet.encryption;
-var registryAddress = '0x6A63bD7E183b3FF621092677515d9D7Eea202F1e';
+var registryAddress = require('./../build/contracts/UportRegistry.sol').deployed().address;
+console.log(registryAddress);
 var EmailRegistry = require('./../build/contracts/EmailRegistry.sol.js');
 var emailRegistry = EmailRegistry.deployed();
+console.log(emailRegistry.address);
+
 var Promise = require('bluebird');
 var encryptionHDPath = "m/0'/0'/2'";
 var DocumentRegistry = require('./../build/contracts/Documents.sol');
 var documentRegistry = DocumentRegistry.deployed();
+var test_accounts = require('./test_accounts');
+var user_account = test_accounts.university;
+var password = user_account.password;
+var salt = user_account.salt;
+var seed = user_account.seed
 
 
-var seed = 'nuclear oxygen lesson hint high tool benefit wait sport powder canyon tribe'; //keyStore.generateRandomSeed();
 console.log(seed);
 
 function base58ToHex(b58) {
@@ -50,7 +56,7 @@ function decryptImage(obj, callback) {
 function createWeb3Provider(rpcURL, keyStoreInstance) {
     var query;
     var provider = new HookedWeb3Provider({
-        host: rpcURL,
+        host: undefined,
         transaction_signer: {
             hasAddress: function(address, callback) {
                 callback(null, true);
@@ -64,6 +70,7 @@ function createWeb3Provider(rpcURL, keyStoreInstance) {
                         query.gasPrice(callback);
                     }
                 }, function(err, result) {
+
                     txParams.gas = result.gas;
                     txParams.gasPrice = result.gasPrice;
                     keyStoreInstance.signTransaction(txParams, callback);
@@ -108,18 +115,22 @@ function onReady(address, encryption_key, pwDerivedKey, keyStoreInstance) {
     };
     var provider = createWeb3Provider(rpcURL, keyStoreInstance);
     web3.setProvider(provider);
-    EmailRegistry.setProvider(provider);
     DocumentRegistry.setProvider(provider);
     var DocumentAdded = documentRegistry.DocumentAdded({}, {
         fromBlock: "latest"
     });
-
+    EmailRegistry.setProvider(provider);
     DocumentAdded.watch(function(error, result) {
         console.log('Logged');
         if (error == null) {
             console.log(result.args);
         }
     });
+    var emailHash = utils.bufferToHex(utils.sha3("subramanian.bsv@gmail.com"));
+    console.log(emailHash);
+    // emailRegistry.registerEmailAddress(emailHash, test_accounts.student.address, {
+    //     from : user_account.address
+    // }).then(console.log, console.log);
     console.log('App ready');
 }
 
@@ -151,11 +162,16 @@ function handleUpload(email, uploadFile) {
     var theirPubKey;
     var userAddress;
     var docHash;
+    var assigneeHash;
+    var imgData;
+
+
     emailRegistry.getAddress(emailHash, {
-        from: "0x040fe96c87343a6a426a9342771b306239614b44"
+        from: user_account.address
     }).then(function(address) {
         userAddress = address;
         console.log(userAddress);
+
         persona = new uport.Persona(address, ipfs, web3.currentProvider, registryAddress);
         return persona.load();
     }).then(function(_persona) {
@@ -163,7 +179,9 @@ function handleUpload(email, uploadFile) {
     }).then(function(encryption_key) {
         theirPubKey = encryption_key;
         return readFilePromise(uploadFile);
-    }).then(function(data) {
+    }).
+    then(function(data) {
+        imgData = data;
         docHash = utils.bufferToHex(utils.sha3(data));
         var keystore = userDetails.keyStoreInstance;
         return encryptImagePromise(keystore, userDetails.pwDerivedKey, theirPubKey, encryptionHDPath, data);
@@ -174,29 +192,39 @@ function handleUpload(email, uploadFile) {
     }).then(function(ipfsResult) {
 
         var ipfsHex = '0x' + base58ToHex(ipfsResult[0].hash);
-        console.log(ipfsResult[0].hash, ipfsHex, docHash);
-        return documentRegistry.addDocument(docHash, ipfsHex, userAddress, {
-            from: "0x040fe96c87343a6a426a9342771b306239614b44"
-        });
-    }).then(function(docs) {
-        console.log(docs);
+        assigneeHash = ipfsHex;
+        var encryptionKey = '0x' + userDetails.keyStoreInstance.getPubKeys(encryptionHDPath)[0];
+        return encryptImagePromise(userDetails.keyStoreInstance, userDetails.pwDerivedKey, encryptionKey, encryptionHDPath, imgData);
+    }).then(function(encryptedObject) {
+        encryptedObject = JSON.stringify(encryptedObject);
+        var encryptedBuffer = utils.toBuffer(encryptedObject);
+        return ipfs.add(encryptedBuffer);
+    }).then(function(ipfsResult) {
+        var ipfsHex = '0x' + base58ToHex(ipfsResult[0].hash);
+        issuerHash = ipfsHex;
+        return documentRegistry.addDocument(docHash, issuerHash, assigneeHash, userAddress, {from : user_account.address});
+    }).
+    then(function(tx) {
+        console.log(tx);
         return documentRegistry.getDocumentsIssuedTo(userAddress, {
-            from: "0x040fe96c87343a6a426a9342771b306239614b44"
-        })
-    }).then(function(docs) {
-        for (var i = 0; i < docs.length; i++) {
-            console.log(docs[i].toString());
-        }
-        return "";
-    }).then(function() {
-        return documentRegistry.getDocumentById(1, {
-            from: "0x040fe96c87343a6a426a9342771b306239614b44"
+            from: user_account.address
+        });
+    }).
+    then(function(docs) {
+        return _.map(docs, function(doc) {
+            return parseInt(doc.toString());
+        });
+    }).
+    then(function(docs) {
+        var docId = docs[docs.length - 1];
+        return documentRegistry.getDocumentById(docId, {
+            from: user_account.address
         });
     }).then(function(_doc) {
         var hashHex = hexToBase58(_doc[2].slice(2));
         return ipfs.cat(hashHex, {buffer : true});
     }).then(function(body) {
-        debugger;
+        ;
         var encryptedObject = body.toString();
         var pubKey = userDetails.keyStoreInstance.getPubKeys(encryptionHDPath)[0];
         var userPublicKey_ = utils.stripHexPrefix(pubKey);

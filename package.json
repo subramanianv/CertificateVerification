@@ -7,6 +7,7 @@
     "build": "browserify src/app.js -o dist/app.bundle.js",
     "start": "watchify src/app.js -o dist/app.bundle.js",
     "upload": "watchify src/upload.js -o dist/upload.bundle.js",
+    "viewdocs" : "watchify src/viewdocs.js -o dist/viewdocs.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -30,6 +31,7 @@
     "bs58": "^3.0.0",
     "eth-lightwallet": "^2.5.2",
     "eth-query": "git://github.com/ethereumjs/eth-query.git",
+    "ethereumjs-testrpc": "^3.0.2",
     "ethereumjs-tx": "^1.1.2",
     "ethereumjs-util": "^4.5.0",
     "express": "4.14.0",
