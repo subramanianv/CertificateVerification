@@ -1,0 +1,23 @@
+{
+	"university" : {
+		"seed" : "again team major dwarf drama brother obey bunker flip still nephew century",
+		"password" : "mypass",
+		"salt" : "swag",
+		"address" : "0xd34d82eeece473c54fd5225bab6c73a7b2898f73",
+		"email" : "univ@gmail.com"
+	},
+	"student" : {
+		"seed" : "eight comfort maximum plate goddess rhythm liquid small fiber arctic coin stool",
+		"password" : "mypass",
+		"salt" : "swag",
+		"address" : "0x7067edd0b4d8b1bb4bcdd15d50c94b56d2c349ab",
+		"email" : "student@gmail.com"
+	},
+	"employer" : {
+		"seed" : "amused paddle fruit tumble change client surround peasant echo verb puppy any",
+		"password" : "mypass",
+		"salt" : "swag",
+		"address" : "0x0ab89a27b937a0a1797057ca415bcec6edf323e5",
+		"email" : "employer@gmail.com"
+	}
+}

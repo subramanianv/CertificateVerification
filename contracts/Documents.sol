@@ -13,9 +13,9 @@ contract Documents {
   }
 
   uint public docID = 1;
-  mapping (bytes32 => Document) documents;
+  mapping (bytes32 => Document) public documents;
   mapping (address => uint[]) documentsIssuedTo;
-  mapping (uint => bytes32) docIdHash;
+  mapping (uint => bytes32) public docIdHash;
 
   event DocumentAdded(address indexed assignee, bytes32 docHash, bytes issuerHash, bytes assigneeHash,uint docID);
 
@@ -53,8 +53,11 @@ contract Documents {
       return documentsIssuedTo[assignee];
   }
 
+  function getDocumentHash(uint docID) constant public returns(bytes32 docHash) {
+      return docIdHash[docID];
+  }
 
-  function getDocumentByHash(bytes32 docHash) constant returns(address issuer, address assignee, bytes issuerHash, bytes assigneeHash ,uint _id) {
+  function getDocumentByHash(bytes32 docHash) constant public returns(address issuer, address assignee ,bytes issuerHash, bytes assigneeHash, uint _id) {
     Document doc = documents[docHash];
     issuer  = doc.issuer;
     assignee = doc.assignee;
@@ -63,9 +66,20 @@ contract Documents {
     _id = doc.id;
   }
 
-  function getDocumentById(uint docID) constant constant returns(address issuer, address assignee, bytes issuerHash, bytes assigneeHash ,uint _id) {
+  function getDocumentById(uint docID) constant public returns(address issuer, address assignee, bytes issuerHash, bytes assigneeHash ,uint _id) {
       bytes32 docHash = docIdHash[docID];
       return getDocumentByHash(docHash);
+  }
+
+  function getIssuer(uint docID) constant public returns(address) {
+      Document doc = documents[docIdHash[docID]];
+      address issuer = doc.issuer;
+      return issuer;
+  }
+
+  function getAssignee(uint docID) constant public returns(address) {
+      Document doc = documents[docIdHash[docID]];
+      return doc.assignee;
   }
 
 }

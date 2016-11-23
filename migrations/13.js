@@ -1,3 +1,3 @@
 module.exports = function(deployer) {
-  deployer.deploy(Documents);
+  deployer.deploy(EmailRegistry);
 };
