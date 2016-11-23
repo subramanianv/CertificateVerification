@@ -27,7 +27,6 @@ contract RequestRegistry {
       if(assignee != msg.sender) {
           throw;
       }
-
       accessRegistry[requestID].granted = true;
   }
 

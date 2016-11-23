@@ -128,10 +128,12 @@ function onReady(address, encryption_key, pwDerivedKey, keyStoreInstance) {
     //     from : user_account.address
     // }).then(console.log, console.log);
     console.log('App ready');
+    console.log(address);
     getDocumentsForUser(address)
 }
 
 function getDocumentsForUser(address) {
+    debugger;
     documentRegistry.getDocumentsIssuedTo(address, {
         from : address
     }).then(function(docs) {

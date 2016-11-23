@@ -11,6 +11,9 @@ var registryAddress = require('./build/contracts/UportRegistry.sol').deployed().
 var EmailRegistry = require('./build/contracts/EmailRegistry.sol');
 var emailRegistry = EmailRegistry.deployed();
 
+console.log(emailRegistry.address);
+console.log(registryAddress);
+
 var Web3 = require('web3');
 var web3 = new Web3();
 web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
