@@ -9,15 +9,32 @@ contract RequestRegistry {
     bytes ipfsHash;
     bool granted;
     bool completed;
+    uint requestTime;
+  }
+  uint public requestID = 1;
+  mapping (uint => Request) accessRegistry;
+  mapping (address => uint[]) requests;
+
+  modifier onlyValidDocument(uint docID) {
+    address assignee = documentRegistry.getAssignee(docID);
+    if(assignee == address(0x0)) {
+        throw;
+    }
+    _;
   }
 
-  mapping (uint => Request) accessRegistry;
-
-  function requestForAccess (uint docID) {
+  function requestForAccess (uint docID) onlyValidDocument(docID) {
+    address assignee = documentRegistry.getAssignee(r.docID);
+    address issuer = documentRegistry.getAssignee(r.docID);
     Request r = accessRegistry[requestID];
     r.docID = docID;
     r.requester = msg.sender;
+    r.requestTime = now;
     accessRegistry[requestID] = r;
+
+    requests[msg.sender].push(requestID);
+    requests[assignee].push(requestID);
+    requests[issuer].push(requestID);
     requestID = requestID + 1;
   }
 
@@ -49,6 +66,15 @@ contract RequestRegistry {
       accessRegistry[requestID] = r;
   }
 
-  uint public requestID = 1;
+  function getRequests(address _for) constant returns(uint[]) {
+      return requests[_for];
+  }
 
+  function getRequest(uint requestID) constant public returns(address requester, uint docID ,bytes docIPFSHash, bool granted, bool completed) {
+      Request req = accessRegistry[requestID];
+      docID  = req.docID;
+      docIPFSHash = req.ipfsHash;
+      granted = req.granted;
+      completed = req.completed;
+  }
 }
