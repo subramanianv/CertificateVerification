@@ -17,19 +17,17 @@ var encryption = lightwallet.encryption;
 var registryAddress = require('./../build/contracts/UportRegistry.sol').deployed().address;
 console.log(registryAddress);
 var EmailRegistry = require('./../build/contracts/EmailRegistry.sol.js');
-var emailRegistry = EmailRegistry.deployed();
-console.log(emailRegistry.address);
-
-
 var RequestRegistry = require('./../build/contracts/RequestRegistry.sol.js')
 var requestRegistry = RequestRegistry.deployed();
+var emailRegistry = EmailRegistry.deployed();
+console.log(emailRegistry.address);
 
 var Promise = require('bluebird');
 var encryptionHDPath = "m/0'/0'/2'";
 var DocumentRegistry = require('./../build/contracts/Documents.sol');
 var documentRegistry = DocumentRegistry.deployed();
 var test_accounts = require('./test_accounts');
-var user_account = test_accounts.student;
+var user_account = test_accounts.employer;
 var password = user_account.password;
 var salt = user_account.salt;
 var seed = user_account.seed
@@ -53,7 +51,6 @@ function decryptImage(obj, callback) {
   var ci = document.getElementById('cimg');
   var _base = 'data:image/png;base64,' + cleartext;
   ci.setAttribute('src', _base);
-  //var arrayBuf = new Buffer(cleartext, 'base64');
   callback(null, cleartext);
 }
 
@@ -74,6 +71,7 @@ function createWeb3Provider(rpcURL, keyStoreInstance) {
                         query.gasPrice(callback);
                     }
                 }, function(err, result) {
+
                     txParams.gas = result.gas;
                     txParams.gasPrice = result.gasPrice;
                     keyStoreInstance.signTransaction(txParams, callback);
@@ -118,46 +116,35 @@ function onReady(address, encryption_key, pwDerivedKey, keyStoreInstance) {
     var DocumentAdded = documentRegistry.DocumentAdded({}, {
         fromBlock: "latest"
     });
-
     EmailRegistry.setProvider(provider);
     RequestRegistry.setProvider(provider);
+    DocumentRequested = requestRegistry.DocumentRequested({}, { fromBlock : "latest"});
+    DocumentRequested.watch(function(error, result) {
+        console.log(error, result);
+    });
     DocumentAdded.watch(function(error, result) {
         console.log('Logged');
         if (error == null) {
             console.log(result.args);
         }
     });
-
-    requestRegistry.AccessGranted({}, {fromBlock : "latest"}).watch(function(error, result) {
-        console.log(error, result);
+    var emailHash = utils.bufferToHex(utils.sha3("student@gmail.com"));
+    emailRegistry.getAddress(emailHash, { from : address}).then(function(studentAddress) {
+        getDocumentsForUser(studentAddress);
+        getAccessRequests(studentAddress);
     });
-    var emailHash = utils.bufferToHex(utils.sha3("subramanian.bsv@gmail.com"));
-    console.log(emailHash);
-    // emailRegistry.registerEmailAddress(emailHash, test_accounts.student.address, {
-    //     from : user_account.address
-    // }).then(console.log, console.log);
     console.log('App ready');
-    console.log(address);
-    getDocumentsForUser(address);
-    getAccessRequestsForUser(address);
-
 }
 
-
-function getAccessRequestsForUser(address) {
-    requestRegistry.getRequests(address, {from : userDetails.address}).then(function(requestIDs) {
-        return _.map(requestIDs,function(requestID) {
-            return parseInt(requestID.toString());
-        })
+function getAccessRequests(address) {
+    requestRegistry.getRequests(address, {
+        from : userDetails.address
     }).then(function(requestIDs) {
-        var docElem = $('#requestAccess');
-        for (var i = 0; i < requestIDs.length; i++) {
-            docElem.append('<li><a href=' + '"#' + requestIDs[i] + '">'+ requestIDs[i]  + '- Grant Access</a></li>')
-        }
-        $('#requestAccess li a').click(function(e) {
-            var requestID = window.location.hash.slice(1);
-            requestRegistry.grantAccess(requestID, {from : userDetails.address}).then(console.log);
-        })
+        return _.map(requestIDs,function (requestID) {
+            return parseInt(requestID.toString());
+        });
+    }).then(function(requestIDs) {
+        console.log(requestIDs);
     });
 }
 
@@ -169,20 +156,17 @@ function getDocumentsForUser(address) {
             return parseInt(doc.toString());
         });
     }).then(function(docs) {
-        var docElem = $('#docs')
+
+        var docElem = $('#docs');
         for (var i = 0; i < docs.length; i++) {
-            docElem.append('<li><a href=' + '"#' + docs[i] + '">'+ docs[i] + '</a></li>')
+            docElem.append('<li><a href=' + '"#' + docs[i] + '">'+ docs[i]  + '- Request Access</a></li>')
         }
         $('#docs li a').click(function(e) {
-            var docID = window.location.hash;
-
-            getDocumentById(parseInt(docID.slice(1)));
+            var docID = window.location.hash.slice(1);
+            debugger;
+            requestRegistry.requestForAccess(docID, {from : userDetails.address}).then(console.log);
         })
     });
-}
-
-function loadPersona(address) {
-
 }
 
 function getDocumentById(docId) {

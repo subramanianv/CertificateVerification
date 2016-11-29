@@ -8,6 +8,8 @@
     "start": "watchify src/app.js -o dist/app.bundle.js",
     "upload": "watchify src/upload.js -o dist/upload.bundle.js",
     "viewdocs" : "watchify src/viewdocs.js -o dist/viewdocs.bundle.js",
+    "employer" : "watchify src/employer.js -o dist/employer.bundle.js",
+    "univ" : "watchify src/univ.js -o dist/univ.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
