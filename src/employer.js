@@ -41,7 +41,7 @@ function base58ToHex(b58) {
 };
 
 function hexToBase58(hexStr) {
-    var buf = new Buffer(hexStr, 'hex');
+    var buf = utils.toBuffer(hexStr);
     return bs58.encode(buf);
 };
 
@@ -131,7 +131,7 @@ function onReady(address, encryption_key, pwDerivedKey, keyStoreInstance) {
     var emailHash = utils.bufferToHex(utils.sha3("student@gmail.com"));
     emailRegistry.getAddress(emailHash, { from : address}).then(function(studentAddress) {
         getDocumentsForUser(studentAddress);
-        getAccessRequests(studentAddress);
+        getAccessRequests(userDetails.address);
     });
     console.log('App ready');
 }
@@ -144,7 +144,29 @@ function getAccessRequests(address) {
             return parseInt(requestID.toString());
         });
     }).then(function(requestIDs) {
-        console.log(requestIDs);
+        var raElem = $('#requestAccess');
+        for (var i = 0; i < requestIDs.length; i++) {
+            raElem.append('<li><a href=' + '"#' + requestIDs[i] + '">'+ requestIDs[i]  + '- Request Access</a></li>')
+        }
+        $('#requestAccess li a').click(function(e) {
+            var requestID = window.location.hash.slice(1);
+            requestRegistry.getRequest(requestID, {from : address}).then(function(result) {
+                return ipfs.cat(hexToBase58(result[2]), {buffer: true});
+            }).then(function(encryptedObject) {
+                encryptedObject = JSON.parse(encryptedObject.toString());
+                var userPublicKey_ = utils.stripHexPrefix(userDetails.keyStoreInstance.getPubKeys(encryptionHDPath)[0]);
+                var userPersona = new uport.Persona("0xd34d82eeece473c54fd5225bab6c73a7b2898f73", ipfs, web3.currentProvider, registryAddress);
+                return userPersona.load().then(function() {
+                    var enc_ = utils.stripHexPrefix(userPersona.getProfile()['encryption_key']);
+                    return encryption.asymDecryptString(userDetails.keyStoreInstance, userDetails.pwDerivedKey, encryptedObject, enc_, userPublicKey_, encryptionHDPath);
+                })
+
+            }).then(function(imgData) {
+                var ci = document.getElementById('cimg');
+                var _base = 'data:image/png;base64,' + imgData;
+                ci.setAttribute('src', _base);
+            });
+        });
     });
 }
 

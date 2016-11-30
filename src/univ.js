@@ -127,7 +127,9 @@ function onReady(address, encryption_key, pwDerivedKey, keyStoreInstance) {
             console.log(result.args);
         }
     });
-
+    requestRegistry.DocumentAttested({}, {fromBlock : "latest"}).watch(function(error, result) {
+        console.log(error, result);
+    });
     requestRegistry.AccessGranted({}, {fromBlock : "latest"}).watch(function(error, result) {
         console.log(error, result);
     });
@@ -143,7 +145,9 @@ function onReady(address, encryption_key, pwDerivedKey, keyStoreInstance) {
 }
 
 function getAccessRequestsForUser(address) {
-    var requestor
+    var requestorAddress;
+    var requestorPersona;
+    var decrypted;
     requestRegistry.getRequests(address, {from : userDetails.address}).then(function(requestIDs) {
         return _.map(requestIDs,function(requestID) {
             return parseInt(requestID.toString());
@@ -156,8 +160,7 @@ function getAccessRequestsForUser(address) {
         $('#requestAccess li a').click(function(e) {
             var requestID = window.location.hash.slice(1);
             requestRegistry.getRequest(requestID, {from : userDetails.address}).then(function(result) {
-                debugger;
-                requestor = result[0];
+                requestorAddress = result[0];
                 var docID = result[1].toString();
                 return documentRegistry.getDocumentById(docID, {from : userDetails.address});
             }).then(function(rx) {
@@ -173,12 +176,24 @@ function getAccessRequestsForUser(address) {
                 //var cleartext = encryption.asymDecryptString(userKeystore, userPWDerivedKey, obj, userPublicKey_, userPublicKey_, encryptionHDPath);
                 encryptedObject = JSON.parse(encryptedObject);
                 return encryption.asymDecryptString(userDetails.keyStoreInstance, userDetails.pwDerivedKey, encryptedObject, userPublicKey_, userPublicKey_, encryptionHDPath);
-            }).then(function(decrypted) {
-                debugger;
-                var requestorPersona = new uport.Persona(requestor, ipfs, web3.currentProvider, registryAddress);
+            }).then(function(_decrypted) {
+                decrypted = _decrypted;
+                requestorPersona = new uport.Persona(requestorAddress, ipfs, web3.currentProvider, registryAddress);
                 return requestorPersona.load();
             }).then(function (claims) {
-                console.log(claims);
+                encryption_key = requestorPersona.getProfile()['encryption_key'];
+                var pubKeys = userDetails.keyStoreInstance.getPubKeys(encryptionHDPath);
+                encryption_key = utils.stripHexPrefix(encryption_key);
+                var encrypted = encryption.asymEncryptString(userDetails.keyStoreInstance, userDetails.pwDerivedKey, decrypted, pubKeys[0], encryption_key, encryptionHDPath);
+                var encryptedObject = JSON.stringify(encrypted);
+                var encryptedBuffer = utils.toBuffer(encryptedObject);
+                return ipfs.add(encryptedBuffer)
+            }).then(function(_res) {
+                var ipfsHash = _res[0].hash;
+                var ipfsHex = '0x' + base58ToHex(ipfsHash);
+                requestRegistry.attest(requestID, ipfsHex, {
+                    from : userDetails.address
+                }).then(console.log);
             });
         })
     });
