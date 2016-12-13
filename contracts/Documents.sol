@@ -20,7 +20,7 @@ contract Documents {
   event DocumentAdded(address indexed assignee, bytes32 docHash, bytes issuerHash, bytes assigneeHash,uint docID);
 
   function addDocument (bytes32 docHash, bytes issuerHash, bytes assigneeHash, address assignee) {
-    if(documents[docHash].added == true) return;
+    if(documents[docHash].added == true) throw;
     Document doc = documents[docHash];
     doc.issuerHash = issuerHash;
     doc.assigneeHash = assigneeHash;

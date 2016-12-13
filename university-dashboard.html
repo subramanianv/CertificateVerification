@@ -1,37 +1,124 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" dir="ltr">
+
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Student Dashboard | Welcome</title>
-    <link rel="stylesheet" href="http://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.min.css">
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University's Dashboard</title>
+    <link rel="stylesheet" href="css/foundation.css">
+    <link rel="stylesheet" href="css/app.css">
+    <style>
+        .title-bar {
+            background: #333;
+        }
+
+        .marketing-hero {
+            background: #074E68;
+            position: relative;
+            padding: 2.5rem 0 4.0rem;
+            text-align: center;
+            overflow: visible;
+            color: white;
+        }
+
+        .hidden {
+            display: none
+        }
+
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            margin: 10px;
+        }
+
+        .file-upload input.file-input {
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0;
+            filter: alpha(opacity=0);
+        }
+        .error {
+            color : red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+        }
+        input[type="file"] { margin: 0 0 1.14286rem 0; }
+input[type="file"] { width: 100%; }
+    </style>
 </head>
+
 <body>
-    <!-- Start Top Bar -->
-    <div class="top-bar">
+    <div class="top-bar title-bar">
         <div class="top-bar-left">
-            <ul class="menu">
-                <li class="menu-text">EthSeal</li>
-            </ul>
+            <h3><b>EthSeal</b></h3>
         </div>
     </div>
-    <!-- End Top Bar -->
-
-    <div class="callout large primary">
-        <div class="row column text-center">
-            <h1>University's Dashboard</h1>
+    <div class="marketing-hero">
+        <h1>University's Dashboard</h1>
+        <br/>
+        <h3 id="eth_address">&nbsp;</h3>
+    </div>
+    <br/>
+    <br/>
+    <div class="row">
+        <div class="large-offset-5 large-5 columns">
+            <a class="large button" href="#" id="issueCertificate">Issue Certificate</a>
         </div>
     </div>
-	<div class="row">
-		<div class="large-column-offset-5 large-column-5">
-			<div class="button">Issue Certificate</div>
-		</div>
-	</div>
-
-    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script src="http://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.js"></script>
+    <div class="hidden row" id="upload">
+        <div class="large-offset-2 large-10 columns">
+            <div class="row">
+                <div class="large-6 columns">
+                    <h3>Upload Certificate</h3>
+                </div>
+            </div>
+            <form id= "certificateUpload">
+                <div class="row">
+                    <div class="large-6 columns">
+                        <label>Student's Email Address:
+                            <input id = "email" required type="text" placeholder="Email Address" />
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="large-6 columns">
+                        <input id = "doc" required type="file" value="Choose File">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="large-6 columns">
+                        <input type="submit" value = "Upload Certificate" class="button medium"/>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="error" class="row hidden">
+        <div class="large-offset-2 large-10 columns">
+            <h3 id="errorMessage" class="error"></h3>
+        </div>
+    </div>
+    <div id="success" class="row hidden">
+        <div class="large-offset-2 large-10 columns">
+            <h4 id="successMessage"></h4>
+            <a href="#" onclick="location.reload()" class="large button">Back</a>
+        </div>
+    </div>
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/vendor/what-input.js"></script>
+    <script src="js/vendor/foundation.js"></script>
+    <script src="http://npmcdn.com/ipfs-api/dist/index.js"></script>
+    <script src="dist/univ.bundle.js"></script>
     <script>
-        $(document).foundation();
+        jQuery(document).foundation();
     </script>
 </body>
 
