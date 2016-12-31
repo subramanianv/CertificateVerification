@@ -7,9 +7,9 @@
     "build": "browserify src/app.js -o dist/app.bundle.js",
     "start": "watchify src/app.js -o dist/app.bundle.js",
     "upload": "watchify src/upload.js -o dist/upload.bundle.js",
-    "viewdocs" : "watchify src/viewdocs.js -o dist/viewdocs.bundle.js",
-    "employer" : "watchify src/employer.js -o dist/employer.bundle.js",
-    "univ" : "watchify src/univ.js -o dist/univ.bundle.js",
+    "citizen": "watchify src/citizen.js -o dist/citizen.bundle.js",
+    "employer": "watchify src/employer.js -o dist/employer.bundle.js",
+    "univ": "watchify src/univ.js -o dist/univ.bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -41,6 +41,8 @@
     "ipfs": "0.17.0",
     "ipfs-api": "^9.0.0",
     "jquery": "^3.1.0",
+    "moment": "^2.17.1",
+    "mustache": "^2.3.0",
     "underscore": "^1.8.3",
     "uport-persona": "git://github.com/subramanianv/uport-persona.git",
     "web3": "^0.17.0-alpha"

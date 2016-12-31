@@ -1,0 +1,102 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Citizen Dashboard | Welcome</title>
+    <style>
+        .column:last-child,
+        .columns:last-child {
+            float: left!important;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 14px!important;
+        }
+        table {
+            border: none;
+        }
+    </style>
+    <link rel="stylesheet" href="http://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.min.css">
+</head>
+
+<body>
+
+    <!-- Start Top Bar -->
+    <div class="top-bar" style="background-color:#fff;border-top:2px solid #03a678; border-bottom:1px solid #e6e6e6">
+        <div class="top-bar-left">
+            <ul class="menu" style="background-color:transparent;">
+                <li class="menu-text" style="font-size:18px;">ZenLocker</li>
+            </ul>
+        </div>
+
+        <div class="top-bar-right">
+            <ul class="menu" style="background-color:transparent;">
+                <li class="menu-text" style="font-size:18px;">Subramanian Venkatesan</li>
+            </ul>
+        </div>
+    </div>
+    <!-- End Top Bar -->
+
+    <div class="row" style="margin-left:0px;height:100%;">
+        <div class="large-3 medium-3 columns" style="height:100%;background-color:#FAFAFA;font-weight:bold;">
+            <ul class="menu vertical">
+                <li><a href="#">My Documents</a></li>
+                <li><a href="#">Requests for Access</a></li>
+                <li><a href="#">My Profile</a></li>
+                <li><a href="#">Logout</a></li>
+            </ul>
+        </div>
+        <div class="large-9 medium-3 columns">
+            <div class="row">
+                <div class="large-12 columns">
+                    <h3 style="padding-top:12px;">My Documents</h3>
+                    <hr style="margin:auto;" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="large-12 columns">
+                    <table id="documents">
+                        <thead>
+                            <tr>
+                                <th width="100">#</th>
+                                <th width="170">Name</th>
+                                <th width="170">Issuer</th>
+                                <th width="150">Actions</th>
+                                <th width="170">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- <tr>
+                                <td>1</td>
+                                <td>Driver's License</td>
+                                <td>Dubai DMV</td>
+                                <td>Send</td>
+                                <td>0x1234</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Health Card</td>
+                                <td>Health Department</td>
+                                <td>Send</td>
+                                <td>0xf8124789</td>
+                            </tr> -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="http://npmcdn.com/ipfs-api/dist/index.js"></script>
+    <script src="dist/citizen.bundle.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <script src="http://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.js"></script>
+    <script>
+        $(document).foundation();
+    </script>
+</body>
+
+</html>

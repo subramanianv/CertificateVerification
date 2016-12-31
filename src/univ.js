@@ -154,7 +154,6 @@ function onReady(address, encryption_key, pwDerivedKey, keyStoreInstance) {
     requestRegistry.AccessGranted({}, {fromBlock : "latest"}).watch(function(error, result) {
         console.log(error, result);
     });
-    document.getElementById("eth_address").innerHTML = address;
 }
 
 function showUploadBox(e) {
@@ -201,31 +200,21 @@ function uploadCertificate(e) {
         var encryptedBuffer = utils.toBuffer(encryptedObject);
         return ipfs.add(encryptedBuffer);
     }).then(function(ipfsResult) {
-        console.log(ipfsResult);
-        var ipfsHex = '0x' + base58ToHex(ipfsResult[0].hash);
-        assigneeHash = ipfsHex;
-        var encryptionKey = '0x' + userDetails.keyStoreInstance.getPubKeys(encryptionHDPath)[0];
-        return encryptImagePromise(userDetails.keyStoreInstance, userDetails.pwDerivedKey, encryptionKey, encryptionHDPath, imgData);
-    }).then(function(encryptedObject) {
-        encryptedObject = JSON.stringify(encryptedObject);
-        var encryptedBuffer = utils.toBuffer(encryptedObject);
-        return ipfs.add(encryptedBuffer);
-    }).then(function(ipfsResult) {
-        var ipfsHex = '0x' + base58ToHex(ipfsResult[0].hash);
-        issuerHash = ipfsHex;
-        return documentRegistry.addDocument(docHash, issuerHash, assigneeHash, userAddress, {from : user_account.address});
+        var assigneeHashHex = '0x' + base58ToHex(ipfsResult[0].hash);
+        return documentRegistry.addDocument(docHash, assigneeHashHex, userAddress, "test document", {from : user_account.address});
     }).then(function(tx) {
         console.log(tx);
-        $("#upload").hide();
+        $("#certificateUpload").hide();
         $("#success").show();
-        $("#successMessage").html("The certificate has been successfully issued. The certificate has been sent to the student for a confirmation. You will be notified when the student confirms.")
+        var successMessage = 'The document has been successfully issued to ' + email + "<br/> Transaction ID " + tx + "<br/> Document Hash " + docHash;
+        $("#successMessage").html(successMessage)
     }).catch(function(err) {
         var msg = 'A Unknown Error has occurred. Please try again'
         if (err && err.message && err.message.indexOf("multihash") >= 0) {
-            msg = "The student's email address doesnt exist";
+            msg = "The ID is invalid";
         }
         else if(err && err.message && err.message.indexOf("invalid") >=0) {
-            msg = 'This Certificate has already been issued';
+            msg = 'This document has already been issued to ' + email;
         }
         $("#error").show();
         $("#errorMessage").html(msg);
@@ -234,7 +223,6 @@ function uploadCertificate(e) {
 
 
 document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("issueCertificate").addEventListener("click", showUploadBox)
     document.getElementById("certificateUpload").addEventListener("submit", uploadCertificate)
     appInit({
         password: password,
